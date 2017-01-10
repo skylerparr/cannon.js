@@ -20,10 +20,8 @@ function Solver(){
  * @param  {Number} dt
  * @param  {World} world
  */
-Solver.prototype.solve = function(dt,world){
-    // Should return the number of iterations done!
-    return 0;
-};
+Solver.prototype.solve = (dt, world) => // Should return the number of iterations done!
+0;
 
 /**
  * Add an equation

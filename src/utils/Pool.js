@@ -29,7 +29,6 @@ Pool.prototype.release = function(){
     for(var i=0; i!==Nargs; i++){
         this.objects.push(arguments[i]);
     }
-    return this;
 };
 
 /**
@@ -50,26 +49,6 @@ Pool.prototype.get = function(){
  * @method constructObject
  * @return {mixed}
  */
-Pool.prototype.constructObject = function(){
+Pool.prototype.constructObject = () => {
     throw new Error("constructObject() not implemented in this Pool subclass yet!");
 };
-
-/**
- * @method resize
- * @param {number} size
- * @return {Pool} Self, for chaining
- */
-Pool.prototype.resize = function (size) {
-    var objects = this.objects;
-
-    while (objects.length > size) {
-        objects.pop();
-    }
-
-    while (objects.length < size) {
-        objects.push(this.constructObject());
-    }
-
-    return this;
-};
-

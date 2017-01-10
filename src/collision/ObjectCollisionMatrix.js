@@ -67,5 +67,5 @@ ObjectCollisionMatrix.prototype.reset = function() {
  * @method setNumObjects
  * @param {Number} n
  */
-ObjectCollisionMatrix.prototype.setNumObjects = function(n) {
+ObjectCollisionMatrix.prototype.setNumObjects = n => {
 };

@@ -1,9 +1,7 @@
-module.exports = Cylinder;
-
-var Shape = require('./Shape');
-var Vec3 = require('../math/Vec3');
-var Quaternion = require('../math/Quaternion');
-var ConvexPolyhedron = require('./ConvexPolyhedron');
+import Shape from './Shape';
+import Vec3 from '../math/Vec3';
+import Quaternion from '../math/Quaternion';
+import ConvexPolyhedron from './ConvexPolyhedron';
 
 /**
  * @class Cylinder
@@ -15,15 +13,17 @@ var ConvexPolyhedron = require('./ConvexPolyhedron');
  * @param {Number} height
  * @param {Number} numSegments The number of segments to build the cylinder out of
  */
-function Cylinder( radiusTop, radiusBottom, height , numSegments ) {
-    var N = numSegments,
-        verts = [],
-        axes = [],
-        faces = [],
-        bottomface = [],
-        topface = [],
-        cos = Math.cos,
-        sin = Math.sin;
+class Cylinder extends ConvexPolyhedron {
+    constructor( radiusTop, radiusBottom, height , numSegments ) {
+        super();
+    const N = numSegments;
+    const verts = [];
+    const axes = [];
+    const faces = [];
+    const bottomface = [];
+    const topface = [];
+    const cos = Math.cos;
+    const sin = Math.sin;
 
     // First bottom point
     verts.push(new Vec3(radiusBottom*cos(0),
@@ -38,8 +38,8 @@ function Cylinder( radiusTop, radiusBottom, height , numSegments ) {
     topface.push(1);
 
     for(var i=0; i<N; i++){
-        var theta = 2*Math.PI/N * (i+1);
-        var thetaN = 2*Math.PI/N * (i+0.5);
+        const theta = 2*Math.PI/N * (i+1);
+        const thetaN = 2*Math.PI/N * (i+0.5);
         if(i<N-1){
             // Bottom
             verts.push(new Vec3(radiusBottom*cos(theta),
@@ -67,13 +67,15 @@ function Cylinder( radiusTop, radiusBottom, height , numSegments ) {
     axes.push(new Vec3(0,0,1));
 
     // Reorder bottom face
-    var temp = [];
+    const temp = [];
     for(var i=0; i<bottomface.length; i++){
         temp.push(bottomface[bottomface.length - i - 1]);
     }
     faces.push(temp);
 
+    this.type = Shape.types.CONVEXPOLYHEDRON;
     ConvexPolyhedron.call( this, verts, faces, axes );
 }
 
-Cylinder.prototype = new ConvexPolyhedron();
+}
+export default Cylinder;

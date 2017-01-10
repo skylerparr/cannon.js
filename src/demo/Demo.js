@@ -44,7 +44,7 @@ CANNON.Demo = function(options){
         shadows: false,
         aabbs: false,
         profiling: false,
-        maxSubSteps: 20
+        maxSubSteps:3
     };
 
     // Extend settings with options
@@ -80,10 +80,8 @@ CANNON.Demo = function(options){
     var particleMaterial = this.particleMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 
     // Geometry caches
-    var contactMeshCache = new GeometryCache(function(){
-        return new THREE.Mesh( three_contactpoint_geo, contactDotMaterial );
-    });
-    var cm2contactMeshCache = new GeometryCache(function(){
+    var contactMeshCache = new GeometryCache(() => new THREE.Mesh( three_contactpoint_geo, contactDotMaterial ));
+    var cm2contactMeshCache = new GeometryCache(() => {
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0,0,0));
         geometry.vertices.push(new THREE.Vector3(1,1,1));
@@ -94,28 +92,26 @@ CANNON.Demo = function(options){
         color: materialColor,
         wireframe:true
     });
-    var bboxMeshCache = new GeometryCache(function(){
-        return new THREE.Mesh(bboxGeometry,bboxMaterial);
-    });
-    var distanceConstraintMeshCache = new GeometryCache(function(){
+    var bboxMeshCache = new GeometryCache(() => new THREE.Mesh(bboxGeometry,bboxMaterial));
+    var distanceConstraintMeshCache = new GeometryCache(() => {
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0,0,0));
         geometry.vertices.push(new THREE.Vector3(1,1,1));
         return new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xff0000 } ) );
     });
-    var p2pConstraintMeshCache = new GeometryCache(function(){
+    var p2pConstraintMeshCache = new GeometryCache(() => {
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0,0,0));
         geometry.vertices.push(new THREE.Vector3(1,1,1));
         return new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xff0000 } ) );
     });
-    var normalMeshCache = new GeometryCache(function(){
+    var normalMeshCache = new GeometryCache(() => {
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0,0,0));
         geometry.vertices.push(new THREE.Vector3(1,1,1));
         return new THREE.Line( geometry, new THREE.LineBasicMaterial({color:0x00ff00}));
     });
-    var axesMeshCache = new GeometryCache(function(){
+    var axesMeshCache = new GeometryCache(() => {
         var mesh = new THREE.Object3D();
         //mesh.useQuaternion = true;
         var origin = new THREE.Vector3(0,0,0);
@@ -221,7 +217,7 @@ CANNON.Demo = function(options){
         }
         scenes.push(initfunc);
         var idx = scenes.length-1;
-        scenePicker[title] = function(){
+        scenePicker[title] = () => {
             changeScene(idx);
         };
         sceneFolder.add(scenePicker,title);
@@ -262,20 +258,10 @@ CANNON.Demo = function(options){
 
         // Read position data into visuals
         for(var i=0; i<N; i++){
-            var b = bodies[i],
-                visual = visuals[i];
-
-            // Interpolated or not?
-            var bodyPos = b.interpolatedPosition;
-            var bodyQuat = b.interpolatedQuaternion;
-            if(settings.paused){
-                bodyPos = b.position;
-                bodyQuat = b.quaternion;
-            }
-
-            visual.position.copy(bodyPos);
+            var b = bodies[i], visual = visuals[i];
+            visual.position.copy(b.position);
             if(b.quaternion){
-                visual.quaternion.copy(bodyQuat);
+                visual.quaternion.copy(b.quaternion);
             }
         }
 
@@ -557,7 +543,7 @@ CANNON.Demo = function(options){
         }
 
         // Add a random value to each line every second
-        world.addEventListener("postStep",function(evt) {
+        world.addEventListener("postStep",evt => {
             for(var label in world.profile)
                 lines[label].append(world.time * 1000, world.profile[label]);
         });
@@ -591,7 +577,7 @@ CANNON.Demo = function(options){
 
             // Render mode
             var rf = gui.addFolder('Rendering');
-            rf.add(settings,'rendermode',{Solid:"solid",Wireframe:"wireframe"}).onChange(function(mode){
+            rf.add(settings,'rendermode',{Solid:"solid",Wireframe:"wireframe"}).onChange(mode => {
                 setRenderMode(mode);
             });
             rf.add(settings,'contacts');
@@ -599,13 +585,13 @@ CANNON.Demo = function(options){
             rf.add(settings,'normals');
             rf.add(settings,'constraints');
             rf.add(settings,'axes');
-            rf.add(settings,'particleSize').min(0).max(1).onChange(function(size){
+            rf.add(settings,'particleSize').min(0).max(1).onChange(size => {
                 for(var i=0; i<visuals.length; i++){
                     if(bodies[i] instanceof CANNON.Particle)
                         visuals[i].scale.set(size,size,size);
                 }
             });
-            rf.add(settings,'shadows').onChange(function(shadows){
+            rf.add(settings,'shadows').onChange(shadows => {
                 if(shadows){
                     renderer.shadowMapAutoUpdate = true;
                 } else {
@@ -614,7 +600,7 @@ CANNON.Demo = function(options){
                 }
             });
             rf.add(settings,'aabbs');
-            rf.add(settings,'profiling').onChange(function(profiling){
+            rf.add(settings,'profiling').onChange(profiling => {
                 if(profiling){
                     world.doProfiling = true;
                     smoothie.start();
@@ -630,51 +616,49 @@ CANNON.Demo = function(options){
             // World folder
             var wf = gui.addFolder('World');
             // Pause
-            wf.add(settings, 'paused').onChange(function(p){
+            wf.add(settings, 'paused').onChange(p => {
                 /*if(p){
                     smoothie.stop();
                 } else {
                     smoothie.start();
                 }*/
-                resetCallTime = true;
             });
-            wf.add(settings, 'stepFrequency',10,60*10).step(10);
-            wf.add(settings, 'maxSubSteps',1,50).step(1);
+            wf.add(settings, 'stepFrequency',60,60*10).step(60);
             var maxg = 100;
-            wf.add(settings, 'gx',-maxg,maxg).onChange(function(gx){
+            wf.add(settings, 'gx',-maxg,maxg).onChange(gx => {
                 if(!isNaN(gx)){
                     world.gravity.set(gx,settings.gy,settings.gz);
                 }
             });
-            wf.add(settings, 'gy',-maxg,maxg).onChange(function(gy){
+            wf.add(settings, 'gy',-maxg,maxg).onChange(gy => {
                 if(!isNaN(gy))
                     world.gravity.set(settings.gx,gy,settings.gz);
             });
-            wf.add(settings, 'gz',-maxg,maxg).onChange(function(gz){
+            wf.add(settings, 'gz',-maxg,maxg).onChange(gz => {
                 if(!isNaN(gz))
                     world.gravity.set(settings.gx,settings.gy,gz);
             });
-            wf.add(settings, 'quatNormalizeSkip',0,50).step(1).onChange(function(skip){
+            wf.add(settings, 'quatNormalizeSkip',0,50).step(1).onChange(skip => {
                 if(!isNaN(skip)){
                     world.quatNormalizeSkip = skip;
                 }
             });
-            wf.add(settings, 'quatNormalizeFast').onChange(function(fast){
+            wf.add(settings, 'quatNormalizeFast').onChange(fast => {
                 world.quatNormalizeFast = !!fast;
             });
 
             // Solver folder
             var sf = gui.addFolder('Solver');
-            sf.add(settings, 'iterations',1,50).step(1).onChange(function(it){
+            sf.add(settings, 'iterations',1,50).step(1).onChange(it => {
                 world.solver.iterations = it;
             });
-            sf.add(settings, 'k',10,10000000).onChange(function(k){
+            sf.add(settings, 'k',10,10000000).onChange(k => {
                 that.setGlobalSpookParams(settings.k,settings.d,1/settings.stepFrequency);
             });
-            sf.add(settings, 'd',0,20).step(0.1).onChange(function(d){
+            sf.add(settings, 'd',0,20).step(0.1).onChange(d => {
                 that.setGlobalSpookParams(settings.k,settings.d,1/settings.stepFrequency);
             });
-            sf.add(settings, 'tolerance',0.0,10.0).step(0.01).onChange(function(t){
+            sf.add(settings, 'tolerance',0.0,10.0).step(0.01).onChange(t => {
                 world.solver.tolerance = t;
             });
 
@@ -713,12 +697,11 @@ CANNON.Demo = function(options){
     }
 
     var lastCallTime = 0;
-    var resetCallTime = false;
     function updatePhysics(){
         // Step world
         var timeStep = 1 / settings.stepFrequency;
 
-        var now = performance.now() / 1000;
+        var now = Date.now() / 1000;
 
         if(!lastCallTime){
             // last call time not saved, cant guess elapsed time. Take a simple step.
@@ -728,10 +711,6 @@ CANNON.Demo = function(options){
         }
 
         var timeSinceLastCall = now - lastCallTime;
-        if(resetCallTime){
-            timeSinceLastCall = 0;
-            resetCallTime = false;
-        }
 
         world.step(timeStep, timeSinceLastCall, settings.maxSubSteps);
 
@@ -764,7 +743,7 @@ CANNON.Demo = function(options){
         renderer.render( that.scene, camera );
     }
 
-    document.addEventListener('keypress',function(e){
+    document.addEventListener('keypress',e => {
 
         if(e.keyCode){
             switch(e.keyCode){
@@ -794,7 +773,6 @@ CANNON.Demo = function(options){
 
             case 112: // p
                 settings.paused = !settings.paused;
-                resetCallTime = true;
                 updategui();
                 break;
 
@@ -875,7 +853,7 @@ CANNON.Demo = function(options){
 
     function GeometryCache(createFunc){
         var that=this, geometries=[], gone=[];
-        this.request = function(){
+        this.request = () => {
             if(geometries.length){
                 geo = geometries.pop();
             } else{
@@ -886,13 +864,13 @@ CANNON.Demo = function(options){
             return geo;
         };
 
-        this.restart = function(){
+        this.restart = () => {
             while(gone.length){
                 geometries.push(gone.pop());
             }
         };
 
-        this.hideCached = function(){
+        this.hideCached = () => {
             for(var i=0; i<geometries.length; i++){
                 scene.remove(geometries[i]);
             }

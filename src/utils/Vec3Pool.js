@@ -19,6 +19,4 @@ Vec3Pool.prototype = new Pool();
  * @method constructObject
  * @return {Vec3}
  */
-Vec3Pool.prototype.constructObject = function(){
-    return new Vec3();
-};
+Vec3Pool.prototype.constructObject = () => new Vec3();

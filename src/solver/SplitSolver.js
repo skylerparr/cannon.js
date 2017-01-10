@@ -74,9 +74,12 @@ function visitFunc(node,bds,eqs){
     }
 }
 
-SplitSolver.prototype.createNode = function(){
-    return { body:null, children:[], eqs:[], visited:false };
-};
+SplitSolver.prototype.createNode = () => ({
+    body:null,
+    children:[],
+    eqs:[],
+    visited:false
+});
 
 /**
  * Solve the subsystems

@@ -62,7 +62,7 @@ function Constraint(bodyA, bodyB, options){
  * Update all the equations with data.
  * @method update
  */
-Constraint.prototype.update = function(){
+Constraint.prototype.update = () => {
     throw new Error("method update() not implmemented in this Constraint subclass!");
 };
 

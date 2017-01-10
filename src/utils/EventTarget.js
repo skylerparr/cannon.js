@@ -3,7 +3,7 @@
  * @class EventTarget
  * @constructor
  */
-var EventTarget = function () {
+var EventTarget = () => {
 
 };
 
@@ -45,18 +45,6 @@ EventTarget.prototype = {
             return true;
         }
         return false;
-    },
-
-    /**
-     * Check if any event listener of the given type is added
-     * @method hasAnyEventListener
-     * @param  {String} type
-     * @return {Boolean}
-     */
-    hasAnyEventListener: function ( type ) {
-        if ( this._listeners === undefined ){ return false; }
-        var listeners = this._listeners;
-        return ( listeners[ type ] !== undefined );
     },
 
     /**
